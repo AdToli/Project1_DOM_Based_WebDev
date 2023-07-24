@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+</head>
+
+
+<body onload="getUserData()" id="body">
+  Search :
+  <input type="text" id="search" />
+  &nbsp;
+  <button onclick="filterData()">Search</button> <br /><br />
+
+  <div id="parent-div"></div>
+
+  <script>
+    let usersData = []; // Store all the user data here
+
+    // Get the user data from API and store it in usersData array
+    async function getUserData() {
+      const response = await fetch(
+        "https://jsonplaceholder.typicode.com/users/"
+      );
+      usersData = await response.json();
+
+      renderData(usersData);
+    }
+
+    // Render the user data based on the given data
+    function renderData(data) {
+      const parentDiv = document.getElementById("parent-div");
+      parentDiv.innerHTML = ""; // Clear the existing content
+
+      data.forEach((user) => {
+        const newDiv = document.createElement("div");
+        newDiv.style.marginBottom = "20px";
+        const idPar = document.createElement("p");
+        idPar.setAttribute("id",`parOfUser${user.id}`)
+        idPar.value="id :"
+        newDiv.innerHTML = `${idPar.value} ${user.id}<br><br>`;
+
+        // Added input elements for Name and Email
+        const nameLabel = document.createElement("label");
+        nameLabel.innerText = "Name: ";
+        const nameInput = document.createElement("input");
+        nameInput.setAttribute("type", "text");
+        nameInput.setAttribute("value", user.name);
+
+        const emailLabel = document.createElement("label");
+        emailLabel.innerText = "Email: ";
+        const emailInput = document.createElement("input");
+        emailInput.setAttribute("type", "email");
+        emailInput.setAttribute("value", user.email);
+
+        newDiv.appendChild(idPar);
+        newDiv.appendChild(nameLabel);
+        newDiv.appendChild(nameInput);
+        newDiv.appendChild(document.createElement("br"));
+        newDiv.appendChild(emailLabel);
+        newDiv.appendChild(emailInput);
+        newDiv.appendChild(document.createElement("br"));
+        newDiv.appendChild(document.createElement("br"));
+
+        //case 5:
+        id.idPar("click", async()=> {
+        newDiv.style.backgroundColor= "orange";
+
+        })
+
+
+        //Button 1 --> "Other Data"
+        const button1 = document.createElement("button");
+        button1.setAttribute("id", `Other Data-${user.id}`);
+        button1.innerText = "Other Data";
+        button1.style.marginRight = "20px";
+        button1.addEventListener("mouseover", (event) => {
+          if (!event.target.hasAttribute("data-hovered")) {
+            event.target.setAttribute("data-hovered", "true");
+            const newDivB1 = document.createElement("div");
+            newDivB1.style.maxWidth = "200px";
+            newDivB1.style.backgroundColor = "grey";
+            newDivB1.style.padding = "10px";
+            newDivB1.innerHTML = `Street: ${user.address.street} <br> City: ${user.address.city} <br> ZipCode: ${user.address.zipcode}`;
+
+            newDivB1.addEventListener("click", () => {
+              newDivB1.parentNode.removeChild(newDivB1);
+              event.target.removeAttribute("data-hovered");
+            });
+
+            event.target.parentElement.appendChild(newDivB1);
+          }
+        });
+
+        //Button 2 --> "Update"
+        const button2 = document.createElement("button");
+        button2.setAttribute("id", `Update-${user.id}`);
+        button2.innerText = "Update";
+        button2.style.marginRight = "10px";
+
+        //Case 4:
+        button2.addEventListener("click", async () => {
+          const updatedName = nameInput.value;
+          const updatedEmail = emailInput.value;
+          const userIndex = usersData.findIndex((u) => u.id === user.id);
+          usersData[userIndex].name = updatedName;
+          usersData[userIndex].email = updatedEmail;
+
+          const response = await fetch(`https://jsonplaceholder.typicode.com/users/${user.id}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ ...usersData[userIndex] })
+          });
+
+          if (response.ok) {
+            console.log(`Updated user ${user.id}: Name: ${updatedName}, Email: ${updatedEmail}`);
+          } else {
+            console.error("Error updating user data");
+          }
+
+        });
+
+        //Button 3 --> "Delete"
+        const button3 = document.createElement("button");
+        button3.setAttribute("id", `Delete-${user.id}`);
+        button3.innerText = "Delete";
+        
+        //Case 4:
+        button3.addEventListener("click", async () => {
+          usersData = usersData.filter((u) => u.id !== user.id);
+          const response = await fetch(`https://jsonplaceholder.typicode.com/users/${user.id}`, {
+            method: "DELETE",
+          });
+
+          if (response.ok) {
+            console.log(`Deleted user ${user.id} from the server`);
+          } else {
+            console.error("Error deleting user data from the server");
+          }
+        });
+
+        //linekd between DIVs and buttons
+        newDiv.appendChild(button1);
+        newDiv.appendChild(button2);
+        newDiv.appendChild(button3);
+        parentDiv.appendChild(newDiv);
+      });
+    }
+
+    //Case 2:  Filter the user data based on the search input and re-render the divs with the filtered data
+    function filterData() {
+      const searchInput = document.getElementById("search").value.toLowerCase();
+      const filteredData = usersData.filter(
+        (user) =>
+          user.name.toLowerCase().includes(searchInput) || user.email.toLowerCase().includes(searchInput)
+      );
+
+      renderData(filteredData);
+
+      /*case 5 : 
+        1. When Clicking on the ID label, the user region will be colored in orange and the user’s
+        posts and todos are presented as follows. 
+        2.  A “todo” that hasn’t completed will present a “Mark Completed” button the will
+        complete the task */
+    }
+  </script>
+   
+</body>
+
+</html>
